@@ -15,7 +15,7 @@
     },
     neon: {
       colors: { background: 0x07021a, player: 0x00f5ff, coin: 0xfff200, drone: 0xff2e88 },
-      gridLine: 0xb026ff, gridAlpha: 0.4,
+      gridLine: 0xb026ff, gridAlpha: 0.7,
       hud: '#00f5ff', overlay: 0x0b0326, overlayText: '#ff7be5',
       glow: true, coinStroke: null
     },
@@ -33,10 +33,70 @@
     if (THEMES[saved]) current = saved;
   } catch (e) { /* storage unavailable: keep classic */ }
 
-  function glow(obj, color, strength) {
-    if (!obj.postFX) return; // Canvas renderer has no FX
-    obj.postFX.clear();
-    if (color !== undefined) obj.postFX.addGlow(color, strength, 0, false, 0.1, 12);
+  // Cheap glow: pre-rendered soft textures drawn additively behind objects (no per-object postFX passes).
+  function makeTexture(scene, key, w, h, draw) {
+    if (scene.textures.exists(key)) return;
+    const tex = scene.textures.createCanvas(key, w, h);
+    draw(tex.getContext(), w, h);
+    tex.refresh();
+  }
+
+  function haloTexture(scene) {
+    makeTexture(scene, 'vt-halo', 64, 64, (ctx, w) => {
+      const g = ctx.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+      g.addColorStop(0, 'rgba(255,255,255,1)');
+      g.addColorStop(0.25, 'rgba(255,255,255,0.6)');
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, w);
+    });
+  }
+
+  function gridGlowTexture(scene, grid) {
+    makeTexture(scene, 'vt-gridglow', grid.width, grid.height, (ctx, w, h) => {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += grid.cellWidth) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+      for (let y = 0; y <= h; y += grid.cellHeight) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+      ctx.stroke();
+    });
+  }
+
+  // Created once per round (the first time neon is active), then only shown/hidden and re-tinted.
+  function ensureGlow(scene, grid) {
+    if (scene.themeGlow) return scene.themeGlow;
+    haloTexture(scene);
+    const halos = [scene.player, scene.coin, ...scene.drones.getChildren()].map(obj => {
+      const img = scene.add.image(obj.x, obj.y, 'vt-halo').setBlendMode(Phaser.BlendModes.ADD);
+      img.setDisplaySize(obj.width * 3.5, obj.height * 3.5);
+      scene.children.moveBelow(img, obj);
+      return { obj, img };
+    });
+    let gridGlow = null;
+    if (grid) {
+      gridGlowTexture(scene, grid);
+      const tl = grid.getTopLeft();
+      gridGlow = scene.add.image(tl.x, tl.y, 'vt-gridglow').setOrigin(0).setBlendMode(Phaser.BlendModes.ADD);
+      scene.children.moveAbove(gridGlow, grid);
+    }
+    const glow = { halos, gridGlow, on: false };
+    const sync = () => { if (glow.on) halos.forEach(h => h.img.setPosition(h.obj.x, h.obj.y)); };
+    scene.events.on('prerender', sync);
+    scene.events.once('shutdown', () => scene.events.off('prerender', sync));
+    scene.themeGlow = glow;
+    return glow;
+  }
+
+  function setGlow(scene, grid, t) {
+    if (!t.glow && !scene.themeGlow) return;
+    if (scene.sys.renderer.type !== Phaser.WEBGL) return; // tinting needs WebGL; Canvas keeps plain colours
+    const glow = ensureGlow(scene, grid);
+    glow.on = t.glow;
+    glow.halos.forEach(({ obj, img }) => img.setTint(obj.fillColor).setAlpha(1).setPosition(obj.x, obj.y).setVisible(t.glow));
+    if (glow.gridGlow) glow.gridGlow.setTint(t.gridLine).setAlpha(0.5).setVisible(t.glow);
   }
 
   function textGlow(text, color, on) {
@@ -52,18 +112,13 @@
     if (grid) {
       grid.setFillStyle(c.background, 1);
       grid.setOutlineStyle(t.gridLine, t.gridAlpha);
-      glow(grid, t.glow ? t.gridLine : undefined, 0.6);
     }
     scene.player.setFillStyle(c.player);
-    glow(scene.player, t.glow ? c.player : undefined, 4);
     scene.coin.setFillStyle(c.coin);
     if (t.coinStroke !== null) scene.coin.setStrokeStyle(2, t.coinStroke);
     else scene.coin.setStrokeStyle();
-    glow(scene.coin, t.glow ? c.coin : undefined, 4);
-    scene.drones.getChildren().forEach(d => {
-      d.setFillStyle(c.drone);
-      glow(d, t.glow ? c.drone : undefined, 4);
-    });
+    scene.drones.getChildren().forEach(d => d.setFillStyle(c.drone));
+    setGlow(scene, grid, t);
     scene.hud.setColor(t.hud);
     textGlow(scene.hud, t.hud, t.glow);
     if (scene.themeOverlay) {
@@ -81,6 +136,7 @@
   const create = CoinDash.prototype.create;
   CoinDash.prototype.create = function () {
     this.themeOverlay = null;
+    this.themeGlow = null;
     create.apply(this, arguments);
     applyToScene(this);
   };
