@@ -1,6 +1,7 @@
 # dragon
 
-Adds one big orange dragon (64×64, drones are 26×26) that slowly chases the player.
+Adds one big orange dragon (drawn sprite with wings, horns and tail; 64×44 hitbox, drones are 26×26)
+that slowly chases the player and faces the way it moves.
 Touching it ends the round ("The dragon caught you!").
 
 ## Speed and difficulty
