@@ -10,5 +10,7 @@ Floating virtual joystick for phones and tablets.
 - Blocks page scroll/zoom from the game area with `touch-action: none`, non-passive
   `touchstart`/`touchmove` handlers, iOS `gesturestart`, and a `user-scalable=no` viewport.
 
-Hook-in: `game.js` adds `window.coinDashTouch.{x,y}` to the keyboard direction in `update()`;
-`index.html` loads `touch_controls.css` and `touch_controls.js`.
+Hook-in: the only shared-file change is one `<script src="features/touch_controls/touch_controls.js">`
+line in `index.html`, after `game.js`. The script loads `touch_controls.css` itself and wraps
+`CoinDash.prototype.update` to add the joystick direction (`window.coinDashTouch.{x,y}`) to the
+keyboard direction, so `game.js` is unchanged.

@@ -1,8 +1,30 @@
+/* global Phaser, COIN_DASH, CoinDash */
 // Touch controls for Coin Dash: a floating virtual joystick over the game area.
-// game.js reads window.coinDashTouch.{x,y} (a unit vector, or 0,0 when idle) in update(),
-// alongside the arrow keys / WASD.
+// Self-contained: loads its own stylesheet and hooks into the CoinDash scene from here,
+// so game.js needs no changes. Load it after game.js.
 (function () {
   const touch = window.coinDashTouch = { x: 0, y: 0 };
+
+  const style = document.createElement('link');
+  style.rel = 'stylesheet';
+  style.href = document.currentScript.src.replace(/\.js$/, '.css');
+  document.head.appendChild(style);
+
+  // After the scene's own arrow-key/WASD update, add the joystick direction and
+  // re-normalize, the same way game.js combines the keys.
+  if (typeof CoinDash === 'function') {
+    const keyboardUpdate = CoinDash.prototype.update;
+    CoinDash.prototype.update = function () {
+      keyboardUpdate.call(this);
+      if (this.finished || (touch.x === 0 && touch.y === 0)) return;
+      const speed = COIN_DASH.playerSpeed;
+      const velocity = this.player.body.velocity;
+      const direction = new Phaser.Math.Vector2(velocity.x / speed + touch.x, velocity.y / speed + touch.y)
+        .normalize().scale(speed);
+      this.player.body.setVelocity(direction.x, direction.y);
+    };
+  }
+
   const RADIUS = 50;     // how far (CSS px) the knob can travel from the base centre
   const DEAD_ZONE = 10;  // ignore tiny finger movements around the centre
 
