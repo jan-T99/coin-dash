@@ -35,6 +35,7 @@ class CoinDash extends Phaser.Scene {
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys('W,A,S,D,R');
     this.input.keyboard.on('keydown-R', () => this.scene.restart());
+    if (window.HighScore) HighScore.attach(this);
   }
 
   placeCoin() {
@@ -72,6 +73,7 @@ class CoinDash extends Phaser.Scene {
       `${reason}\n${this.score} coins collected\nPress R to try again`,
       { font: '24px monospace', color: '#ffffff', align: 'center', lineSpacing: 12 }
     ).setOrigin(0.5);
+    if (window.HighScore) HighScore.submit(this);
   }
 }
 window.coinDashGame = new Phaser.Game({
