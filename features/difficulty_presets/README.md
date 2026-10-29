@@ -5,9 +5,9 @@ The player speed (`COIN_DASH.playerSpeed`) stays the same in every preset.
 
 | Preset | Drone speed (px/s) |
 |--------|--------------------|
-| Easy   | 70                 |
+| Easy   | 40                 |
 | Medium | 105 (original game, default) |
-| Hard   | 160                |
+| Hard   | 210                |
 
 ## Usage
 
