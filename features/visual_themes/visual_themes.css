@@ -1,0 +1,37 @@
+/* Visual themes: page styling for the neon dark mode and the white mode. */
+.theme-switcher { display: flex; gap: 10px; margin: 0 0 14px; }
+.theme-switcher button {
+  font: 600 14px/1 system-ui, sans-serif; padding: 9px 16px; cursor: pointer;
+  border-radius: 999px; border: 1px solid #34445e; background: #142036; color: #e5edf7;
+  transition: background .2s, color .2s, box-shadow .2s, border-color .2s;
+}
+.theme-switcher button:hover { border-color: #71e8ce; }
+.theme-switcher button[data-theme="neon"][aria-pressed="true"] {
+  background: #12002b; color: #00f5ff; border-color: #00f5ff;
+  box-shadow: 0 0 8px #00f5ff, 0 0 18px #ff2e88, inset 0 0 8px #00f5ff;
+}
+.theme-switcher button[data-theme="white"][aria-pressed="true"] {
+  background: #ffffff; color: #1b2638; border-color: #ffffff;
+}
+
+/* Neon dark mode */
+body[data-theme="neon"] {
+  background: radial-gradient(ellipse at top, #1a0540 0%, #05010f 60%) fixed; color: #e9dcff;
+}
+body[data-theme="neon"] header > p:first-child { color: #ff2e88; text-shadow: 0 0 6px #ff2e88; }
+body[data-theme="neon"] h1 {
+  color: #00f5ff; text-shadow: 0 0 4px #00f5ff, 0 0 14px #00f5ff, 0 0 32px #b026ff;
+}
+body[data-theme="neon"] strong { color: #fff200; text-shadow: 0 0 6px #fff200; }
+body[data-theme="neon"] #game {
+  border-color: #b026ff; box-shadow: 0 0 10px #b026ff, 0 0 30px rgba(255, 46, 136, .45);
+}
+
+/* White mode */
+body[data-theme="white"] { background: #eef2f7; color: #1b2638; }
+body[data-theme="white"] header > p:first-child { color: #0f9d84; }
+body[data-theme="white"] #game { border-color: #c9d3e1; box-shadow: 0 6px 24px rgba(27, 38, 56, .12); }
+body[data-theme="white"] .theme-switcher button { background: #ffffff; color: #1b2638; border-color: #c9d3e1; }
+body[data-theme="white"] .theme-switcher button[aria-pressed="true"] {
+  background: #1b2638; color: #ffffff; border-color: #1b2638;
+}
