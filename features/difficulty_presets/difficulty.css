@@ -1,0 +1,22 @@
+#difficulty-presets {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+#difficulty-presets button {
+  font: 14px monospace;
+  padding: 6px 14px;
+  color: #ffffff;
+  background: #1a2a44;
+  border: 1px solid #3a4f70;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#difficulty-presets button[aria-pressed="true"] {
+  background: #ff657a;
+  border-color: #ff657a;
+  color: #101c31;
+}
