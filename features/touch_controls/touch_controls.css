@@ -1,0 +1,30 @@
+/* Touch controls: only active when touch_controls.js adds .touch-controls to <html>. */
+.touch-controls body { overscroll-behavior: none; }
+.touch-controls #game {
+  position: relative;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.touch-controls-zone { position: absolute; inset: 0; touch-action: none; }
+.touch-controls-base {
+  position: absolute; left: 80px; top: calc(100% - 80px);
+  width: 100px; height: 100px; transform: translate(-50%, -50%);
+  border-radius: 50%; border: 2px solid rgba(229, 237, 247, .35);
+  background: rgba(229, 237, 247, .08); opacity: .5; pointer-events: none;
+}
+.touch-controls-base.active { opacity: 1; }
+.touch-controls-knob {
+  position: absolute; left: 50%; top: 50%; width: 46px; height: 46px;
+  transform: translate(-50%, -50%); border-radius: 50%;
+  background: rgba(113, 232, 206, .75);
+}
+.touch-controls-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-top: 10px; font-size: 15px; touch-action: manipulation;
+}
+.touch-controls-bar button {
+  font: inherit; color: #0a1120; background: #71e8ce; border: 0; border-radius: 8px;
+  padding: 10px 18px; min-height: 44px;
+}
